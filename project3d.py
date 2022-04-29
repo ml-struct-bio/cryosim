@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
 
+sys.path.insert(0,'/sdf/group/ml/CryoNet/axlevy/cryodrgnai-cryodrgn2/')
 from cryodrgn import utils
 from cryodrgn import mrc
 from cryodrgn import fft

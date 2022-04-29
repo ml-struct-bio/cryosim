@@ -9,6 +9,7 @@ import pickle
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 
+sys.path.insert(0,'/sdf/group/ml/CryoNet/axlevy/cryodrgnai-cryodrgn2/')
 from cryodrgn.ctf import compute_ctf_np as compute_ctf
 from cryodrgn import mrc
 from cryodrgn import utils
@@ -102,12 +103,15 @@ def compute_full_ctf(D, Nimg, args):
         ctf = ctf.reshape((Nimg, D, D))
         #df = np.stack([df,df], axis=1)
     elif args.sample_df:
-        df1 = np.random.normal(args.dfu,args.sample_df,Nimg)
+        # df1 = np.random.normal(args.dfu,args.sample_df,Nimg)
+        # lognormal distribution
+        df1 = np.random.lognormal(np.log(args.dfu), args.sample_df, Nimg)
         if args.no_astigmatism:
             assert args.dfv == args.dfu, "--dfu and --dfv must be the same"
             df2 = df1
         else:
-            df2 = np.random.normal(args.dfv,args.sample_df,Nimg)
+            # df2 = np.random.normal(args.dfv,args.sample_df,Nimg)
+            df2 = np.random.lognormal(np.log(args.dfv), args.sample_df, Nimg)
         ctf = np.array([compute_ctf(freqs, i, j, args.ang, args.kv, args.cs, args.wgh, args.ps, args.b) \
                 for i, j in zip(df1, df2)])
         ctf = ctf.reshape((Nimg, D, D))
@@ -119,10 +123,10 @@ def compute_full_ctf(D, Nimg, args):
     return ctf, df
 
 def add_ctf(particles, ctf):
-    particles = np.array([np.fft.fftshift(np.fft.fft2(np.fft.fftshift(x))) for x in particles])
+    particles = np.array([np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(x))) for x in particles])
     particles *= ctf
     del ctf
-    particles = np.array([np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(x))).astype(np.float32) for x in particles])
+    particles = np.array([np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(x))).astype(np.float32) for x in particles])
     return particles
 
 def normalize(particles):

@@ -5,6 +5,7 @@ import numpy as np
 import sys, os
 import matplotlib.pyplot as plt
 
+sys.path.insert(0,'/sdf/group/ml/CryoNet/axlevy/cryodrgnai-cryodrgn2/')
 from cryodrgn import utils
 from cryodrgn import mrc
 from cryodrgn import dataset
