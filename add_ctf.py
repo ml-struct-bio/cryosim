@@ -108,7 +108,11 @@ def compute_full_ctf(D, Nimg, args):
         # for x in params:
             # print('x:',x.shape) # [9,]
         ctf = np.array([compute_ctf(freqs, x[2], x[3], x[4], x[5], x[6], x[7], x[8], args.b) for x in params])
-        
+        # print('ctf:',ctf.shape) # [10000, 65536]?
+        df1 = params[:,2]
+        df2 = params[:,3]
+        df = np.stack([df1, df2], axis=1)
+        print('df:',df.shape)
     elif args.df_file:
         df = pickle.load(open(args.df_file,'rb'))
         assert len(df) == Nimg
