@@ -5,10 +5,10 @@ import numpy as np
 import sys, os
 import matplotlib.pyplot as plt
 
-from cryodrgn import utils
-from cryodrgn import mrc
-from cryodrgn import dataset
-from cryodrgn.lattice import EvenLattice
+from cryodrgnai.cryodrgn import utils
+from cryodrgnai.cryodrgn import mrc
+from cryodrgnai.cryodrgn import dataset
+from cryodrgnai.cryodrgn.lattice import EvenLattice
 
 log = utils.log
 
@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('--mask-r', type=int, help='Radius for circular mask')
     parser.add_argument('--datadir', help='Optionally overwrite path to starfile .mrcs if loading from a starfile')
     parser.add_argument('-o', type=os.path.abspath, required=True, help='Output particle stack')
-    parser.add_argument('--out-png')
+    parser.add_argument('--out-png', type=os.path.abspath, help='Montage of first 9 projections')
     return parser
 
 def plot_projections(out_png, imgs):

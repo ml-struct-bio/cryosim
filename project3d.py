@@ -13,12 +13,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
+import utils
+import mrc
 
-from cryodrgn import utils
-from cryodrgn import mrc
-from cryodrgn import fft
-from cryodrgn import lie_tools
-from cryodrgn import so3_grid
+from cryodrgnai.cryodrgn import fft
+from cryodrgnai.cryodrgn import lie_tools
+from cryodrgnai.cryodrgn import so3_grid
 
 import matplotlib
 matplotlib.use('Agg')
@@ -46,6 +46,7 @@ def parse_args():
 class Projector:
     def __init__(self, vol, tilt=None):
         nz, ny, nx = vol.shape
+        # print('nz, ny, nx:',nz,ny,nx)
         assert nz==ny==nx, 'Volume must be cubic'
         x2, x1, x0 = np.meshgrid(np.linspace(-1, 1, nz, endpoint=True), 
                              np.linspace(-1, 1, ny, endpoint=True),
@@ -54,7 +55,7 @@ class Projector:
 
         lattice = np.stack([x0.ravel(), x1.ravel(), x2.ravel()],1).astype(np.float32)
         self.lattice = torch.from_numpy(lattice)
-
+        # print('lattice:',lattice.shape)
         self.vol = torch.from_numpy(vol.astype(np.float32))
         self.vol = self.vol.unsqueeze(0)
         self.vol = self.vol.unsqueeze(0)
@@ -77,7 +78,9 @@ class Projector:
         B = rot.size(0)
         if self.tilt is not None:
             rot = self.tilt @ rot
+        # print('rot:',rot.shape)
         grid = self.lattice @ rot # B x D^3 x 3 
+        # print('grid:',grid.shape)
         grid = grid.view(-1, self.nz, self.ny, self.nx, 3)
         offset = self.center - grid[:,int(self.nz/2),int(self.ny/2),int(self.nx/2)]
         grid += offset[:,None,None,None,:]
@@ -126,7 +129,7 @@ def plot_projections(out_png, imgs):
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
     axes = axes.ravel()
     for i in range(min(len(imgs),9)):
-        axes[i].imshow(imgs[i])
+        axes[i].imshow(imgs[i], cmap='gray')
     plt.savefig(out_png)
 
 def mkbasedir(out):

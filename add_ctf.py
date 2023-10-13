@@ -9,11 +9,13 @@ import pickle
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 
-from cryodrgn.ctf import compute_ctf_np as compute_ctf
-from cryodrgn import mrc
-from cryodrgn import utils
+from cryodrgnai.cryodrgn.ctf import compute_ctf_np as compute_ctf
+from cryodrgnai.cryodrgn import mrc
+from cryodrgnai.cryodrgn import utils
+import logging
 
 log = utils.log
+logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -26,7 +28,7 @@ def parse_args():
     parser.add_argument('-o', required=True, type=os.path.abspath, help='Output .mrcs')
     parser.add_argument('--out-star', type=os.path.abspath, help='Output star file (default: [output mrcs filename].star)')
     parser.add_argument('--out-pkl', type=os.path.abspath, help='Output pkl file (default: [output mrcs filename].pkl)')
-    parser.add_argument('--out-png')
+    parser.add_argument('--out-png', type=os.path.abspath, help='Montage of first 9 projections')
 
     group = parser.add_argument_group('CTF parameters')
     group.add_argument('--Apix', type=float, help='Pixel size (A/pix)')
@@ -92,6 +94,15 @@ def compute_full_ctf(D, Nimg, args):
     freqs = np.stack([x0.ravel(),x1.ravel()],axis=1)
     if args.ctf_pkl: # todo: refator
         params = pickle.load(open(args.ctf_pkl,'rb'))
+        # print('params:',len(params))
+        # print_ctf_params(params[0])
+        # print('len(params):',len(params)) # 9
+        # print('ctf1:',params.shape) # (9,)
+        sampled_indices = np.random.choice(params.shape[0], size=10000, replace=False)
+        params = params[sampled_indices]
+        # print('ctf2:',params.shape)
+        ctf = add_ctf(particles, params)
+
         assert len(params) == Nimg
         ctf = np.array([compute_ctf(freqs, *x, args.b) for x in params])
     elif args.df_file:
@@ -132,6 +143,18 @@ def normalize(particles):
     log('Shifting input images by {}'.format(mu))
     log('Scaling input images by {}'.format(std))
     return particles
+
+def print_ctf_params(params: np.ndarray) -> None:
+    assert len(params) == 9
+    logger.info("Image size (pix)  : {}".format(int(params[0])))
+    logger.info("A/pix             : {}".format(params[1]))
+    logger.info("DefocusU (A)      : {}".format(params[2]))
+    logger.info("DefocusV (A)      : {}".format(params[3]))
+    logger.info("Dfang (deg)       : {}".format(params[4]))
+    logger.info("voltage (kV)      : {}".format(params[5]))
+    logger.info("cs (mm)           : {}".format(params[6]))
+    logger.info("w                 : {}".format(params[7]))
+    logger.info("Phase shift (deg) : {}".format(params[8]))
 
 def plot_projections(out_png, imgs):
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
@@ -182,7 +205,6 @@ def main(args):
     
     log('Applying the CTF')
     ctf, defocus_list = compute_full_ctf(D, Nimg, args)
-    particles = add_ctf(particles, ctf)
 
     if args.s2 is None:
         std = np.std(particles[mask])
