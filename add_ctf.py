@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from cryodrgnai.cryodrgn.ctf import compute_ctf_np as compute_ctf
 from cryodrgnai.cryodrgn import mrc
 from cryodrgnai.cryodrgn import utils
+
 import logging
 
 log = utils.log
@@ -88,23 +89,26 @@ def add_noise(particles, D, sigma):
     particles += np.random.normal(0,sigma,particles.shape)
     return particles
 
+
 def compute_full_ctf(D, Nimg, args):
+    # print('D:',D)
+    # print('Apix*D:',args.Apix*D)
     freqs = np.arange(-D/2,D/2)/(args.Apix*D)
     x0, x1 = np.meshgrid(freqs,freqs)
     freqs = np.stack([x0.ravel(),x1.ravel()],axis=1)
     if args.ctf_pkl: # todo: refator
         params = pickle.load(open(args.ctf_pkl,'rb'))
-        # print('params:',len(params))
-        # print_ctf_params(params[0])
-        # print('len(params):',len(params)) # 9
-        # print('ctf1:',params.shape) # (9,)
         sampled_indices = np.random.choice(params.shape[0], size=10000, replace=False)
         params = params[sampled_indices]
-        # print('ctf2:',params.shape)
-        ctf = add_ctf(particles, params)
+        # print('params:', params.shape) # [10000, 9]
 
         assert len(params) == Nimg
-        ctf = np.array([compute_ctf(freqs, *x, args.b) for x in params])
+        # print('freqs:',freqs.shape) # [65536, 2]
+        # print('args.b:',args.b) # [100]
+        # for x in params:
+            # print('x:',x.shape) # [9,]
+        ctf = np.array([compute_ctf(freqs, x[2], x[3], x[4], x[5], x[6], x[7], x[8], args.b) for x in params])
+        
     elif args.df_file:
         df = pickle.load(open(args.df_file,'rb'))
         assert len(df) == Nimg
@@ -180,7 +184,7 @@ def main(args):
     D, D2 = particles[0].shape
     assert D == D2, 'Images must be square'
 
-    log('Loaded {} images'.format(Nimg))
+    log('Loaded {} images'.format(Nimg)) # Nimg = 10000
 
     mkbasedir(args.o)
     warnexists(args.o)
