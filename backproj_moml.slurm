@@ -14,6 +14,6 @@
 module purge
 module load anaconda3/2023.3
 
-conda activate tomodrgn
+conda activate cryodrgn_2.3
 
-cryodrgn backproject_voxel generated/projected/opt1_90rot_projected_extent5.mrcs --poses generated/projected/opt1_90rot_pose_extent5.pkl --uninvert-data -o generated/projected/backprojected/opt1_rot90_extent5_backprojected_uninvert.mrc
+cryodrgn backproject_voxel generated/noise_added/opt1_rot180_ctfadded_extent5_output_noisy_particles.mrcs --poses generated/projected/opt1_180rot_pose_extent5.pkl --uninvert-data -o generated/noise_added/backprojected/opt1_rot180_noise_added_extent5_backprojected_uninvert.mrc
