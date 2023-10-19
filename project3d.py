@@ -150,6 +150,9 @@ def translate_img(img, t):
     return np.fft.fftshift(np.fft.ifft2(ff)).real
 
 def main(args):
+    print('args.o:',args.o)
+    print('args.out_png:',args.out_png)
+    print('args.out_pose:',args.out_pose)
     for out in (args.o, args.out_png, args.out_pose):
         if not out: continue
         mkbasedir(out)

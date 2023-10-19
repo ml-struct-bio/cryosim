@@ -98,10 +98,10 @@ def compute_full_ctf(D, Nimg, args):
     freqs = np.stack([x0.ravel(),x1.ravel()],axis=1)
     if args.ctf_pkl: # todo: refator
         params = pickle.load(open(args.ctf_pkl,'rb'))
-        sampled_indices = np.random.choice(params.shape[0], size=10000, replace=False)
+        sampled_indices = np.random.choice(params.shape[0], size=1000, replace=False)
         params = params[sampled_indices]
         # print('params:', params.shape) # [10000, 9]
-
+        print('Nimg:',Nimg)
         assert len(params) == Nimg
         # print('freqs:',freqs.shape) # [65536, 2]
         # print('args.b:',args.b) # [100]
@@ -112,7 +112,7 @@ def compute_full_ctf(D, Nimg, args):
         df1 = params[:,2]
         df2 = params[:,3]
         df = np.stack([df1, df2], axis=1)
-        print('df:',df.shape)
+        # print('df:',df.shape)
     elif args.df_file:
         df = pickle.load(open(args.df_file,'rb'))
         assert len(df) == Nimg
@@ -168,7 +168,7 @@ def plot_projections(out_png, imgs):
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
     axes = axes.ravel()
     for i in range(min(len(imgs),9)):
-        axes[i].imshow(imgs[i])
+        axes[i].imshow(imgs[i], cmap='gray')
     plt.savefig(out_png)
 
 def mkbasedir(out):
