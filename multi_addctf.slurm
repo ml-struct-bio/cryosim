@@ -18,5 +18,5 @@ conda activate tomodrgn
 
 for i in {1..100}
 do 
-    python add_ctf.py /home/mj7341/dev/MoML/data/igg_prepost_frame100/3d_projected/projs/$i.projs.mrcs --ctf-pkl all.ctf.pkl --Apix 3 --s1 0 --s2 0 -o /home/mj7341/dev/MoML/data/igg_prepost_frame100/ctf_added/mrcs/$i.256_ctf.mrcs --out-png /home/mj7341/dev/MoML/data/igg_prepost_frame100/ctf_added/pngs/$i.256_ctf.png
+    python add_ctf.py /home/mj7341/dev/MoML/data/igg_prepost_frame100/3d_projected/projs/$i.256.projs.mrcs --ctf-pkl all.ctf.pkl --Apix 3 --s1 0 --s2 0 -o /home/mj7341/dev/MoML/data/igg_prepost_frame100/ctf_added/mrcs/$i.256_ctf.mrcs --out-png /home/mj7341/dev/MoML/data/igg_prepost_frame100/ctf_added/pngs/$i.256_ctf.png
 done

@@ -191,6 +191,7 @@ def main(args):
     log('Loaded {} images'.format(Nimg)) # Nimg = 10000
 
     mkbasedir(args.o)
+    mkbasedir(args.out_png)
     warnexists(args.o)
 
     #if not args.rad: args.rad = D/2
