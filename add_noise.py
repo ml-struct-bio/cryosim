@@ -43,6 +43,7 @@ def main(args):
     assert (args.snr is None) != (args.sigma is None) # xor
 
     mkbasedir(args.o)
+    mkbasedir(args.out_png)
     warnexists(args.o)
 
     # load particles
