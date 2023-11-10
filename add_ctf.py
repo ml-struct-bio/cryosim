@@ -13,10 +13,7 @@ from cryodrgnai.cryodrgn.ctf import compute_ctf_np as compute_ctf
 from cryodrgnai.cryodrgn import mrc
 from cryodrgnai.cryodrgn import utils
 
-import logging
-
 log = utils.log
-logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -29,7 +26,7 @@ def parse_args():
     parser.add_argument('-o', required=True, type=os.path.abspath, help='Output .mrcs')
     parser.add_argument('--out-star', type=os.path.abspath, help='Output star file (default: [output mrcs filename].star)')
     parser.add_argument('--out-pkl', type=os.path.abspath, help='Output pkl file (default: [output mrcs filename].pkl)')
-    parser.add_argument('--out-png', type=os.path.abspath, help='Montage of first 9 projections')
+    parser.add_argument('--out-png')
 
     group = parser.add_argument_group('CTF parameters')
     group.add_argument('--Apix', type=float, help='Pixel size (A/pix)')
@@ -89,30 +86,17 @@ def add_noise(particles, D, sigma):
     particles += np.random.normal(0,sigma,particles.shape)
     return particles
 
-
 def compute_full_ctf(D, Nimg, args):
-    # print('D:',D)
-    # print('Apix*D:',args.Apix*D)
     freqs = np.arange(-D/2,D/2)/(args.Apix*D)
     x0, x1 = np.meshgrid(freqs,freqs)
     freqs = np.stack([x0.ravel(),x1.ravel()],axis=1)
     if args.ctf_pkl: # todo: refator
         params = pickle.load(open(args.ctf_pkl,'rb'))
-        sampled_indices = np.random.choice(params.shape[0], size=1000, replace=False)
-        params = params[sampled_indices]
-        # print('params:', params.shape) # [10000, 9]
-        print('Nimg:',Nimg)
         assert len(params) == Nimg
-        # print('freqs:',freqs.shape) # [65536, 2]
-        # print('args.b:',args.b) # [100]
-        # for x in params:
-            # print('x:',x.shape) # [9,]
-        ctf = np.array([compute_ctf(freqs, x[2], x[3], x[4], x[5], x[6], x[7], x[8], args.b) for x in params])
-        # print('ctf:',ctf.shape) # [10000, 65536]?
-        df1 = params[:,2]
-        df2 = params[:,3]
-        df = np.stack([df1, df2], axis=1)
-        # print('df:',df.shape)
+        params = params[:,2:]
+        df = params[:,:2]
+        ctf = np.array([compute_ctf(freqs, *x, args.b) for x in params])
+        ctf = ctf.reshape((Nimg, D, D))
     elif args.df_file:
         df = pickle.load(open(args.df_file,'rb'))
         assert len(df) == Nimg
@@ -152,23 +136,11 @@ def normalize(particles):
     log('Scaling input images by {}'.format(std))
     return particles
 
-def print_ctf_params(params: np.ndarray) -> None:
-    assert len(params) == 9
-    logger.info("Image size (pix)  : {}".format(int(params[0])))
-    logger.info("A/pix             : {}".format(params[1]))
-    logger.info("DefocusU (A)      : {}".format(params[2]))
-    logger.info("DefocusV (A)      : {}".format(params[3]))
-    logger.info("Dfang (deg)       : {}".format(params[4]))
-    logger.info("voltage (kV)      : {}".format(params[5]))
-    logger.info("cs (mm)           : {}".format(params[6]))
-    logger.info("w                 : {}".format(params[7]))
-    logger.info("Phase shift (deg) : {}".format(params[8]))
-
 def plot_projections(out_png, imgs):
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
     axes = axes.ravel()
     for i in range(min(len(imgs),9)):
-        axes[i].imshow(imgs[i], cmap='gray')
+        axes[i].imshow(imgs[i])
     plt.savefig(out_png)
 
 def mkbasedir(out):
@@ -188,7 +160,7 @@ def main(args):
     D, D2 = particles[0].shape
     assert D == D2, 'Images must be square'
 
-    log('Loaded {} images'.format(Nimg)) # Nimg = 10000
+    log('Loaded {} images'.format(Nimg))
 
     mkbasedir(args.o)
     mkbasedir(args.out_png)
@@ -214,6 +186,7 @@ def main(args):
     
     log('Applying the CTF')
     ctf, defocus_list = compute_full_ctf(D, Nimg, args)
+    particles = add_ctf(particles, ctf)
 
     if args.s2 is None:
         std = np.std(particles[mask])
