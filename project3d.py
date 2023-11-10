@@ -150,9 +150,9 @@ def translate_img(img, t):
     return np.fft.fftshift(np.fft.ifft2(ff)).real
 
 def main(args):
-    print('args.o:',args.o)
-    print('args.out_png:',args.out_png)
-    print('args.out_pose:',args.out_pose)
+    # print('args.o:',args.o)
+    # print('args.out_png:',args.out_png)
+    # print('args.out_pose:',args.out_pose)
     for out in (args.o, args.out_png, args.out_pose):
         if not out: continue
         mkbasedir(out)
@@ -238,6 +238,8 @@ def main(args):
     mrc.write(args.o,imgs.astype(np.float32))
     log('Saving {}'.format(args.out_pose))
     rots = rots.rots.cpu().numpy()
+    # print('rots:',rots.shape)
+    # print('trans:',trans.shape)
     with open(args.out_pose,'wb') as f:
         if args.t_extent:
             pickle.dump((rots,trans),f)
@@ -246,7 +248,7 @@ def main(args):
     if args.out_png:
         log('Saving {}'.format(args.out_png))
         plot_projections(args.out_png, imgs[:9])
-
+    print('-'*20)
 if __name__ == '__main__':
     args = parse_args().parse_args()
     utils._verbose = args.verbose
