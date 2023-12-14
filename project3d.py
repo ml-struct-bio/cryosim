@@ -13,8 +13,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
-import utils
-import mrc
+from cryodrgnai.cryodrgn import utils
+from cryodrgnai.cryodrgn import mrc
 
 from cryodrgnai.cryodrgn import fft
 from cryodrgnai.cryodrgn import lie_tools
