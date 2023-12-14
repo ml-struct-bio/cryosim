@@ -7,6 +7,7 @@ import numpy as np
 import sys, os
 import pickle
 from datetime import datetime as dt
+import matplotlib
 import matplotlib.pyplot as plt
 
 from cryodrgnai.cryodrgn.ctf import compute_ctf_np as compute_ctf
@@ -137,11 +138,13 @@ def normalize(particles):
     return particles
 
 def plot_projections(out_png, imgs):
+    matplotlib.use('Agg')
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
     axes = axes.ravel()
     for i in range(min(len(imgs),9)):
         axes[i].imshow(imgs[i])
     plt.savefig(out_png)
+    plt.close()
 
 def mkbasedir(out):
     if not os.path.exists(os.path.dirname(out)):
