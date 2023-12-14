@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import sys, os
+import matplotlib
 import matplotlib.pyplot as plt
 
 from cryodrgnai.cryodrgn import utils
@@ -17,6 +18,7 @@ def parse_args():
     parser.add_argument('mrcs', help='Input particles (.mrcs, .star, or .txt)')
     parser.add_argument('--snr', type=float)
     parser.add_argument('--sigma', type=float)
+    parser.add_argument('--invert', action="store_true", help="invert data (mult by -1)")
     parser.add_argument('--mask', choices=('none','strict','circular'), help='Type of mask for computing signal variance')
     parser.add_argument('--mask-r', type=int, help='Radius for circular mask')
     parser.add_argument('--datadir', help='Optionally overwrite path to starfile .mrcs if loading from a starfile')
@@ -25,11 +27,13 @@ def parse_args():
     return parser
 
 def plot_projections(out_png, imgs):
+    matplotlib.use('Agg')
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10,10))
     axes = axes.ravel()
     for i in range(min(len(imgs),9)):
         axes[i].imshow(imgs[i], cmap='gray')
     plt.savefig(out_png)
+    plt.close()
 
 def mkbasedir(out):
     if not os.path.exists(os.path.dirname(out)):
@@ -71,7 +75,10 @@ def main(args):
     # add noise
     log('Adding noise with std {}'.format(sigma))
     particles += np.random.normal(0,sigma,particles.shape)
-
+    if args.invert:
+        print('invert data!')
+        particles *= -1
+    
     # save particles
     mrc.write(args.o, particles.astype(np.float32))
 
