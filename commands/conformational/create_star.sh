@@ -1,0 +1,2 @@
+file="/scratch/gpfs/ZHONGE/mj7341/research/00_moml/antibody/dataset/conformational"
+python /scratch/gpfs/ZHONGE/mj7341/MoML/cryodrgn/cryodrgn/commands_utils/write_star.py $file/add_noise/128_chimera_resample/snr01/mrcs/sorted_particles.128.txt --ctf $file/integrated_ctf.pkl --poses $file/integrated_poses_chimera.pkl -o $file/add_noise/128_chimera_resample/snr01/snr01_star.star 
